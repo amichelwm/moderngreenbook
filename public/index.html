@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modern Green Book Starter</title>
+    <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        min-height: 100vh;
+      }
+      .panel {
+        padding: 1rem;
+        border-right: 1px solid #ddd;
+      }
+      #map {
+        height: 100vh;
+      }
+      fieldset {
+        border: 1px solid #ddd;
+        margin: 0 0 1rem;
+      }
+      #results {
+        font-size: 0.95rem;
+      }
+      .muted {
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="panel">
+        <h1>Modern Green Book</h1>
+        <p>Select identities, then click any map location.</p>
+        <fieldset>
+          <legend>Identity profile</legend>
+          <label><input type="checkbox" value="women" /> Women</label><br />
+          <label><input type="checkbox" value="lgbtq" /> LGBTQ+</label><br />
+          <label><input type="checkbox" value="religious" /> Religious minority</label><br />
+          <label><input type="checkbox" value="latinx" /> Latinx</label><br />
+          <label><input type="checkbox" value="black" /> Black</label>
+        </fieldset>
+        <div id="results" class="muted">Click the map to view safety context.</div>
+      </aside>
+      <main id="map" aria-label="Map"></main>
+    </div>
+
+    <script src="/vendor/leaflet/leaflet.js"></script>
+    <script src="/main.js"></script>
+  </body>
+</html>
