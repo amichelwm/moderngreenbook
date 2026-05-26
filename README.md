@@ -9,7 +9,7 @@ A starter application inspired by *The Negro Motorist Green Book* that provides 
 - Safety lookup API:
   - **US locations** are normalized at **city** level
   - **Non-US locations** are normalized at **country** level
-- Starter "agentic updater" endpoint that ingests source URLs and merges updated location data
+- Starter "agentic updater" endpoint that ingests configured source IDs and merges updated location data
 - Sample city/country data, news items, and facts
 
 ## Run locally
@@ -38,8 +38,8 @@ Body:
 
 ```json
 {
-  "sources": ["https://example.com/safety-feed.json"]
+  "sourceIds": ["demo"]
 }
 ```
 
-This is a starter workflow for an agentic pipeline. It fetches JSON records from provided sources and merges them into the in-memory dataset.
+This is a starter workflow for an agentic pipeline. It fetches JSON records from configured HTTPS sources in `src/data/sourceRegistry.js` and merges them into the in-memory dataset.

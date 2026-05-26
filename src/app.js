@@ -1,9 +1,15 @@
 const express = require('express');
 const path = require('path');
 const { sampleLocations } = require('./data/sampleLocations');
+const { sourceRegistry } = require('./data/sourceRegistry');
 const { calculateSafety } = require('./services/safetyService');
 const { normalizeLocation } = require('./services/locationService');
-const { updateFromSources } = require('./services/agentUpdater');
+const { updateFromSources, resolveSourceUrls } = require('./services/agentUpdater');
+
+const US_LAT_MIN = 24;
+const US_LAT_MAX = 49.5;
+const US_LNG_MIN = -125;
+const US_LNG_MAX = -66;
 
 async function reverseGeocode({ lat, lng }) {
   const params = new URLSearchParams({
@@ -26,7 +32,7 @@ async function reverseGeocode({ lat, lng }) {
 }
 
 function inferLocationFromCoordinates({ lat, lng }) {
-  const inUsBounds = lat >= 24 && lat <= 49.5 && lng >= -125 && lng <= -66;
+  const inUsBounds = lat >= US_LAT_MIN && lat <= US_LAT_MAX && lng >= US_LNG_MIN && lng <= US_LNG_MAX;
   if (inUsBounds) {
     return {
       scope: 'city',
@@ -51,6 +57,8 @@ function createApp() {
   app.use(express.static(path.join(__dirname, '..', 'public')));
   app.use('/vendor/leaflet', express.static(path.join(__dirname, '..', 'node_modules', 'leaflet', 'dist')));
 
+  // Starter behavior: keep profiles in-memory for easy local iteration.
+  // Replace with a persistent datastore for production usage.
   const locations = { ...sampleLocations };
 
   app.get('/api/safety', async (req, res) => {
@@ -93,9 +101,12 @@ function createApp() {
 
   app.post('/api/agent/update', async (req, res) => {
     try {
-      const { sources } = req.body || {};
-      if (!Array.isArray(sources) || sources.length === 0) {
-        return res.status(400).json({ error: 'sources must be a non-empty array of URLs.' });
+      const { sourceIds } = req.body || {};
+      let sources;
+      try {
+        sources = resolveSourceUrls(sourceIds, sourceRegistry);
+      } catch (error) {
+        return res.status(400).json({ success: false, error: error.message });
       }
       const result = await updateFromSources({ sources, locations });
       return res.json({

@@ -12,8 +12,17 @@ function selectedIdentities() {
   return Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map((node) => node.value);
 }
 
-function listToHtml(items) {
-  return `<ul>${items.map((item) => `<li>${item}</li>`).join('')}</ul>`;
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function safeListToHtml(items) {
+  return `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
 }
 
 map.on('click', async (event) => {
@@ -42,15 +51,15 @@ map.on('click', async (event) => {
         : data.location.country;
 
     results.innerHTML = `
-      <p><strong>Location:</strong> ${locationText} (${data.location.scope} scope)</p>
+      <p><strong>Location:</strong> ${escapeHtml(locationText)} (${escapeHtml(data.location.scope)} scope)</p>
       <p><strong>Safety score:</strong> ${data.safety.score}/100 (${data.safety.level})</p>
-      <p><strong>Selected identities:</strong> ${data.requestedIdentities.join(', ') || 'none'}</p>
+      <p><strong>Selected identities:</strong> ${escapeHtml(data.requestedIdentities.join(', ') || 'none')}</p>
       <p><strong>Facts</strong></p>
-      ${listToHtml(data.facts)}
+      ${safeListToHtml(data.facts)}
       <p><strong>News</strong></p>
-      ${listToHtml(data.news)}
+      ${safeListToHtml(data.news)}
     `;
   } catch (error) {
-    results.innerHTML = `<p style="color:#b00;"><strong>Error:</strong> ${error.message}</p>`;
+    results.innerHTML = `<p style="color:#b00;"><strong>Error:</strong> ${escapeHtml(error.message)}</p>`;
   }
 });

@@ -1,4 +1,5 @@
 const net = require('node:net');
+const DEFAULT_BASE_SCORE = 68;
 
 function isPrivateHost(hostname) {
   const lowerHost = hostname.toLowerCase();
@@ -6,7 +7,9 @@ function isPrivateHost(hostname) {
 
   const ipVersion = net.isIP(lowerHost);
   if (ipVersion === 4) {
-    const [a, b] = lowerHost.split('.').map(Number);
+    const parts = lowerHost.split('.');
+    if (parts.length !== 4) return true;
+    const [a, b] = parts.map(Number);
     if (a === 10 || a === 127 || a === 0) return true;
     if (a === 192 && b === 168) return true;
     if (a === 169 && b === 254) return true;
@@ -38,7 +41,7 @@ function sanitizeRecord(record) {
   if (!record || typeof record !== 'object' || typeof record.key !== 'string') return null;
   return {
     key: record.key.toLowerCase(),
-    baseScore: typeof record.baseScore === 'number' ? record.baseScore : 68,
+    baseScore: typeof record.baseScore === 'number' ? record.baseScore : DEFAULT_BASE_SCORE,
     facts: Array.isArray(record.facts) ? record.facts : [],
     news: Array.isArray(record.news) ? record.news : []
   };
@@ -73,8 +76,26 @@ async function updateFromSources({ sources, locations }) {
   return { updatedCount };
 }
 
+function resolveSourceUrls(sourceIds, sourceRegistry) {
+  if (!Array.isArray(sourceIds) || sourceIds.length === 0) {
+    throw new Error('sourceIds must be a non-empty array.');
+  }
+
+  return sourceIds.map((sourceId) => {
+    if (typeof sourceId !== 'string') {
+      throw new Error('Each sourceId must be a string.');
+    }
+    const sourceUrl = sourceRegistry[sourceId];
+    if (!sourceUrl) {
+      throw new Error(`Unknown sourceId: ${sourceId}`);
+    }
+    return sourceUrl;
+  });
+}
+
 module.exports = {
   updateFromSources,
   sanitizeRecord,
-  validateSourceUrl
+  validateSourceUrl,
+  resolveSourceUrls
 };
